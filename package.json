@@ -1,0 +1,15 @@
+{
+  "name": "backcomandapp",
+  "version": "1.0.0",
+  "description": "Backend of Comandapp application for take commands in a restaurant",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "nodemon": "^3.1.9"
+  }
+}
