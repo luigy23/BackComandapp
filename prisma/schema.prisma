@@ -1,0 +1,190 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+// Define la fuente de datos (MySQL en este caso) y la URL de conexión.
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL") // Carga la URL desde las variables de entorno (.env)
+}
+
+// Define el generador del cliente Prisma (genera el cliente JS/TS para interactuar con la BD).
+generator client {
+  provider = "prisma-client-js"
+}
+
+// --- Enums ---
+// Define los posibles estados para una mesa.
+enum TableStatus {
+  AVAILABLE     // Disponible
+  OCCUPIED      // Ocupada
+  BILL_PENDING  // Ocupada, esperando pago
+  DISABLED      // Deshabilitada (fuera de servicio)
+}
+
+// Define los posibles estados para una categoría de producto.
+enum CategoryStatus {
+  ACTIVE
+  INACTIVE
+}
+
+// Define los posibles estados para un producto.
+enum ProductStatus {
+  ACTIVE
+  INACTIVE
+  OUT_OF_STOCK // Podría ser útil si no se usa stock numérico estricto
+}
+
+// Define los posibles estados para un pedido.
+enum OrderStatus {
+  OPEN      // Pedido abierto, se pueden añadir items
+  CLOSED    // Pedido cerrado y pagado
+  CANCELLED // Pedido cancelado
+}
+
+// Define los posibles estados para un ítem dentro de un pedido.
+enum OrderItemStatus {
+  PENDING    // Recibido, pendiente de preparar
+  PREPARING  // En preparación (cocina/barra)
+  READY      // Listo para ser recogido por el mesero
+  DELIVERED  // Entregado en la mesa
+  CANCELLED  // Ítem cancelado (void)
+}
+
+// Define los posibles estados para una reserva.
+enum ReservationStatus {
+  CONFIRMED  // Reserva confirmada
+  CANCELLED  // Reserva cancelada por cliente o restaurante
+  NO_SHOW    // El cliente no se presentó
+  COMPLETED  // El cliente asistió y completó su visita
+}
+
+// --- Models ---
+
+// Modelo para los Roles de Usuario (Admin, Mesero, Cocina, Cajero)
+model Role {
+  id    Int    @id @default(autoincrement())
+  name  String @unique // Nombre del rol (ej. "Admin")
+  users User[] // Relación: Un rol puede tener muchos usuarios
+}
+
+// Modelo para los Usuarios del sistema
+model User {
+  id           Int      @id @default(autoincrement())
+  name         String
+  email        String   @unique
+  passwordHash String
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  roleId Int  // Foreign Key para Role
+  role   Role @relation(fields: [roleId], references: [id]) // Relación: Un usuario tiene un rol
+
+  // Relaciones inversas
+  orders       Order[] @relation("WaiterOrders") // Relación: Un mesero puede atender muchos pedidos
+  reservations Reservation[] // Relación: Un usuario (ej. recepcionista) puede crear muchas reservas
+}
+
+// Modelo para las Mesas del restaurante
+model DiningTable {
+  id        Int         @id @default(autoincrement())
+  number    String      @unique // Número o nombre identificador de la mesa (ej. "5", "Barra 1")
+  capacity  Int         // Capacidad de comensales
+  status    TableStatus @default(AVAILABLE) // Estado actual de la mesa
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+
+  // Relaciones inversas
+  orders       Order[] // Relación: Una mesa puede tener muchas órdenes (historial)
+  reservations Reservation[] // Relación: Una mesa puede tener muchas reservas asociadas
+}
+
+// Modelo para las Categorías de Productos (Entrantes, Principales, Bebidas, etc.)
+model Category {
+  id          Int       @id @default(autoincrement())
+  name        String    @unique
+  description String? // Descripción opcional
+  status      CategoryStatus @default(ACTIVE)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  // Relaciones inversas
+  products Product[] // Relación: Una categoría tiene muchos productos
+}
+
+// Modelo para los Productos del menú
+model Product {
+  id           Int       @id @default(autoincrement())
+  name         String    // Nombre único dentro de la categoría sería ideal, pero lo dejamos flexible por ahora
+  description  String?
+  price        Decimal   @db.Decimal(10, 2) // Precio (ej. 12.50)
+  imageUrl     String?   // URL de la imagen del producto (opcional)
+  stock        Int?      // Cantidad en stock (opcional, para control de inventario)
+  status       ProductStatus @default(ACTIVE)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  categoryId Int      // Foreign Key para Category
+  category   Category @relation(fields: [categoryId], references: [id]) // Relación: Un producto pertenece a una categoría
+
+  // Relaciones inversas
+  orderItems OrderItem[] // Relación: Un producto puede estar en muchos items de pedido
+}
+
+// Modelo para los Pedidos
+model Order {
+  id          Int         @id @default(autoincrement())
+  status      OrderStatus @default(OPEN)
+  totalAmount Decimal     @default(0.00) @db.Decimal(10, 2) // Se podría calcular al vuelo o actualizar al cerrar
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  tableId Int         // Foreign Key para DiningTable
+  table   DiningTable @relation(fields: [tableId], references: [id]) // Relación: Un pedido pertenece a una mesa
+
+  waiterId Int  // Foreign Key para User (el mesero que tomó/gestionó el pedido)
+  waiter   User @relation("WaiterOrders", fields: [waiterId], references: [id]) // Relación: Un pedido es atendido por un mesero
+
+  // Relaciones inversas
+  items OrderItem[] // Relación: Un pedido contiene muchos items
+}
+
+// Modelo para los Ítems dentro de un Pedido
+model OrderItem {
+  id        Int             @id @default(autoincrement())
+  quantity  Int
+  unitPrice Decimal         @db.Decimal(10, 2) // Precio del producto al momento de añadirlo (por si cambia luego)
+  notes     String?         // Notas especiales para cocina/barra (ej. "sin cebolla")
+  status    OrderItemStatus @default(PENDING)
+  createdAt DateTime        @default(now())
+  updatedAt DateTime        @updatedAt
+
+  orderId Int   // Foreign Key para Order
+  order   Order @relation(fields: [orderId], references: [id]) // Relación: Un item pertenece a un pedido
+
+  productId Int     // Foreign Key para Product
+  product   Product @relation(fields: [productId], references: [id]) // Relación: Un item referencia a un producto
+}
+
+// Modelo para las Reservas de mesas
+model Reservation {
+  id              Int               @id @default(autoincrement())
+  customerName    String
+  contactNumber   String?           // Número de teléfono u otro contacto
+  reservationTime DateTime          // Fecha y hora de la reserva
+  numberOfPeople  Int               // Número de comensales
+  notes           String?           // Notas adicionales (ej. "Prefiere ventana", "Necesita silla alta")
+  status          ReservationStatus @default(CONFIRMED)
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+
+  tableId Int?        // Foreign Key opcional para DiningTable
+  table   DiningTable? @relation(fields: [tableId], references: [id]) // Relación: Una reserva puede estar asignada a una mesa
+
+  // Quién tomó la reserva (opcional, si queremos rastrearlo)
+  userId Int?  // Foreign Key opcional para User
+  user   User? @relation(fields: [userId], references: [id])
+}
