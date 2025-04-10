@@ -45,6 +45,7 @@ export const login = async (req, res) => {
             token 
         });
     } catch (error) {
+        console.log("error en el login", error);
         res.status(401).json({ 
             error: error.message 
         });

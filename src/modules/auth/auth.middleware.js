@@ -2,7 +2,8 @@ import jwt from 'jsonwebtoken';
 
 const authMiddleware = (req, res, next) => {
     try {
-        const token = req.headers.authorization?.split(' ')[1];
+        const authHeader = req.headers.authorization;
+        const token = authHeader?.split(' ')[1];
         
         if (!token) {
             return res.status(401).json({ 
@@ -16,10 +17,13 @@ const authMiddleware = (req, res, next) => {
         );
 
         req.user = decoded;
+        console.log("Token decodificado:", decoded);
         next();
     } catch (error) {
+        console.error('Error en la autenticación:', error);
         res.status(401).json({ 
-            error: 'Token inválido' 
+            error: 'Token inválido',
+            details: error.message
         });
     }
 };

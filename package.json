@@ -8,7 +8,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "start": "node index.js",
-    "dev": "nodemon index.js"
+    "dev": "nodemon index.js",
+    "seed": "node prisma/seed.js"
   },
   "keywords": [],
   "author": "",
@@ -19,7 +20,9 @@
   },
   "dependencies": {
     "@prisma/client": "^6.5.0",
+    "bcrypt": "^5.1.1",
     "bcryptjs": "^3.0.2",
+    "cors": "^2.8.5",
     "express": "^4.21.2",
     "jsonwebtoken": "^9.0.2",
     "mysql2": "^3.14.0",

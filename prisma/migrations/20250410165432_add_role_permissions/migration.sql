@@ -1,0 +1,12 @@
+-- CreateTable
+CREATE TABLE `RolePermission` (
+    `id` INTEGER NOT NULL AUTO_INCREMENT,
+    `roleId` INTEGER NOT NULL,
+    `permission` ENUM('MANAGE_USERS', 'MANAGE_ROLES', 'MANAGE_TABLES', 'MANAGE_CATEGORIES', 'MANAGE_PRODUCTS', 'MANAGE_ORDERS', 'MANAGE_RESERVATIONS', 'VIEW_REPORTS', 'PROCESS_PAYMENTS', 'KITCHEN_ACCESS') NOT NULL,
+
+    UNIQUE INDEX `RolePermission_roleId_permission_key`(`roleId`, `permission`),
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- AddForeignKey
+ALTER TABLE `RolePermission` ADD CONSTRAINT `RolePermission_roleId_fkey` FOREIGN KEY (`roleId`) REFERENCES `Role`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;

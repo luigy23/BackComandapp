@@ -61,13 +61,47 @@ enum ReservationStatus {
   COMPLETED  // El cliente asistió y completó su visita
 }
 
+// Define los posibles estados para una categoría de mesa
+enum TableCategoryStatus {
+  ACTIVE
+  INACTIVE
+}
+
+
+//Define los posibles Permisos de los roles
+enum Permission {
+  MANAGE_USERS        // Gestionar usuarios
+  MANAGE_ROLES        // Gestionar roles y permisos
+  MANAGE_TABLES       // Gestionar mesas
+  MANAGE_CATEGORIES   // Gestionar categorías de productos
+  MANAGE_PRODUCTS     // Gestionar productos
+  MANAGE_ORDERS       // Gestionar pedidos
+  MANAGE_RESERVATIONS // Gestionar reservas
+  VIEW_REPORTS        // Ver reportes y estadísticas
+  PROCESS_PAYMENTS    // Procesar pagos
+  KITCHEN_ACCESS      // Acceso a vista de cocina
+}
+
+
 // --- Models ---
 
 // Modelo para los Roles de Usuario (Admin, Mesero, Cocina, Cajero)
 model Role {
-  id    Int    @id @default(autoincrement())
-  name  String @unique // Nombre del rol (ej. "Admin")
-  users User[] // Relación: Un rol puede tener muchos usuarios
+  id          Int              @id @default(autoincrement())
+  name        String           @unique
+  description String?
+  users       User[]
+  permissions RolePermission[]
+}
+
+// Modelo para la relación entre Roles y Permisos
+model RolePermission {
+  id         Int        @id @default(autoincrement())
+  role       Role       @relation(fields: [roleId], references: [id])
+  roleId     Int
+  permission Permission
+
+  @@unique([roleId, permission])
 }
 
 // Modelo para los Usuarios del sistema
@@ -88,18 +122,36 @@ model User {
   reservations Reservation[] // Relación: Un usuario (ej. recepcionista) puede crear muchas reservas
 }
 
-// Modelo para las Mesas del restaurante
-model DiningTable {
-  id        Int         @id @default(autoincrement())
-  number    String      @unique // Número o nombre identificador de la mesa (ej. "5", "Barra 1")
-  capacity  Int         // Capacidad de comensales
-  status    TableStatus @default(AVAILABLE) // Estado actual de la mesa
-  createdAt DateTime    @default(now())
-  updatedAt DateTime    @updatedAt
+// Modelo para las Categorías de Mesas (1er Piso, 2do Piso, Sala, etc.)
+model TableCategory {
+  id          Int                @id @default(autoincrement())
+  name        String             @unique
+  description String?
+  status      TableCategoryStatus @default(ACTIVE)
+  createdAt   DateTime           @default(now())
+  updatedAt   DateTime           @updatedAt
 
   // Relaciones inversas
-  orders       Order[] // Relación: Una mesa puede tener muchas órdenes (historial)
-  reservations Reservation[] // Relación: Una mesa puede tener muchas reservas asociadas
+  tables      DiningTable[]      // Relación: Una categoría tiene muchas mesas
+}
+
+// Modelo para las Mesas del restaurante
+model DiningTable {
+  id            Int         @id @default(autoincrement())
+  number        String      @unique
+  description   String?
+  capacity      Int
+  status        TableStatus @default(AVAILABLE)
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  // Nueva relación con TableCategory
+  categoryId    Int?        // Opcional, por si hay mesas sin categoría
+  category      TableCategory? @relation(fields: [categoryId], references: [id])
+
+  // Relaciones inversas
+  orders       Order[]
+  reservations Reservation[]
 }
 
 // Modelo para las Categorías de Productos (Entrantes, Principales, Bebidas, etc.)

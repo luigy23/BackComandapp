@@ -4,7 +4,15 @@ const prisma = new PrismaClient();
 
 export const findByEmail = async (email) => {
     return await prisma.user.findUnique({
-        where: { email }
+        where: { email },
+        include: {
+            role: {
+                select: {
+                    name: true,
+                    id: true
+                }
+            }
+        }
     });
 };
 

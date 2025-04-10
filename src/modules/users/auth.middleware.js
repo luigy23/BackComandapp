@@ -4,23 +4,24 @@ const prisma = new PrismaClient();
 
 const isAdmin = async (req, res, next) => {
     try {
-        // Asumimos que el ID del usuario está en req.user (seteado por el middleware de autenticación principal)
-        const userId = req.user.id;
-
-        // Buscar el usuario y su rol
-        const user = await prisma.user.findUnique({
-            where: { id: userId },
-            include: {
-                role: true
-            }
-        });
-
-        if (!user) {
-            return res.status(404).json({ message: 'Usuario no encontrado' });
+        // Verificamos que req.user exista
+        if (!req.user) {
+            return res.status(401).json({
+                message: 'Usuario no autenticado'
+            });
         }
 
-        // Verificar si el usuario es administrador
-        if (user.role.name.toLowerCase() !== 'admin') {
+        // Obtenemos el roleId del usuario
+        const roleId = req.user.roleId;
+
+        if (!roleId) {
+            return res.status(401).json({
+                message: 'Información de rol no disponible'
+            });
+        }
+
+        // Verificar si el usuario es administrador (roleId 1 corresponde a ADMIN)
+        if (roleId !== 1) {
             return res.status(403).json({ 
                 message: 'Acceso denegado. Se requiere rol de administrador.' 
             });

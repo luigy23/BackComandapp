@@ -55,9 +55,6 @@ const createUser = async (req, res) => {
 const getAllUsers = async (req, res) => {
     try {
         const users = await prisma.user.findMany({
-            include: {
-                role: true
-            },
             select: {
                 id: true,
                 name: true,
@@ -65,6 +62,7 @@ const getAllUsers = async (req, res) => {
                 isActive: true,
                 role: {
                     select: {
+                        id: true,
                         name: true
                     }
                 }
@@ -84,9 +82,6 @@ const getUserById = async (req, res) => {
         const { id } = req.params;
         const user = await prisma.user.findUnique({
             where: { id: parseInt(id) },
-            include: {
-                role: true
-            },
             select: {
                 id: true,
                 name: true,
@@ -94,6 +89,7 @@ const getUserById = async (req, res) => {
                 isActive: true,
                 role: {
                     select: {
+                        id: true,
                         name: true
                     }
                 }
@@ -218,6 +214,10 @@ const deleteUser = async (req, res) => {
         res.status(500).json({ message: 'Error al desactivar el usuario' });
     }
 };
+
+
+
+
 
 export {
     createUser,

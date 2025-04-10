@@ -51,11 +51,15 @@ export const login = async (email, password) => {
 };
 
 const generateToken = (user) => {
+    console.log("generando token", user);
     return jwt.sign(
         { 
             id: user.id, 
+            name: user.name,
             email: user.email,
-            roleId: user.roleId 
+            role: user.role,
+            roleId: user.role.id,
+
         },
         process.env.JWT_SECRET || 'tu-secreto-seguro',
         { expiresIn: '24h' }
