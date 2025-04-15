@@ -1,7 +1,7 @@
 export const checkRole = (allowedRoles) => {
     return (req, res, next) => {
         try {
-            const userRole = req.user.role;
+            const userRole = req.user.role.name;
             
             if (!userRole || !allowedRoles.includes(userRole)) {
                 return res.status(403).json({

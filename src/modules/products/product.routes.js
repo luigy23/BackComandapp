@@ -6,18 +6,15 @@ import {
     updateProduct, 
     deleteProduct 
 } from './product.controller.js';
-import { authenticateToken } from '../../middleware/auth.middleware.js';
-import { checkRole } from '../../middleware/role.middleware.js';
+import upload from '../../middleware/multer.js';
 
 const router = Router();
 
-// Rutas públicas
+// Rutas para productos
 router.get('/', getAllProducts);
 router.get('/:id', getProductById);
+router.post('/', upload.single('image'), createProduct);
+router.put('/:id', upload.single('image'), updateProduct);
+router.delete('/:id', deleteProduct);
 
-// Rutas protegidas (solo admin y manager)
-router.post('/', authenticateToken, checkRole(['ADMIN', 'MANAGER']), createProduct);
-router.put('/:id', authenticateToken, checkRole(['ADMIN', 'MANAGER']), updateProduct);
-router.delete('/:id', authenticateToken, checkRole(['ADMIN', 'MANAGER']), deleteProduct);
-
-export default router; 
+export default router;

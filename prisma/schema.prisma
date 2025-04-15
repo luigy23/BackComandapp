@@ -178,10 +178,10 @@ model Product {
   status       ProductStatus @default(ACTIVE)
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
-
+  
   categoryId Int      // Foreign Key para Category
   category   Category @relation(fields: [categoryId], references: [id]) // Relación: Un producto pertenece a una categoría
-
+  
   // Relaciones inversas
   orderItems OrderItem[] // Relación: Un producto puede estar en muchos items de pedido
 }

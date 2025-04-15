@@ -4,6 +4,7 @@ import jwt from 'jsonwebtoken';
 const prisma = new PrismaClient();
 
 export const authenticateToken = async (req, res, next) => {
+    console.log('Authenticating token');
     try {
         const authHeader = req.headers['authorization'];
         const token = authHeader && authHeader.split(' ')[1];
