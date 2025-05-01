@@ -170,7 +170,6 @@ Actualiza los datos de un producto existente.
   }
 }
 ```
-
 ### Eliminar/Desactivar un producto
 
 ```http

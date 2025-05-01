@@ -5,7 +5,8 @@ import {
     getTableById,
     createTable,
     updateTable,
-    deleteTable
+    deleteTable,
+    getTablesByCategory
 } from './table.controller.js';
 
 const router = Router();
@@ -19,4 +20,6 @@ router.post('/', checkTableAccess, createTable);
 router.put('/:id', checkTableAccess, updateTable);
 router.delete('/:id', checkTableAccess, deleteTable);
 
+//rutas mesas por categoria
+router.get('/category/:categoryId', getTablesByCategory);
 export default router; 

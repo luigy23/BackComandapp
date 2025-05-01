@@ -4,18 +4,19 @@ const prisma = new PrismaClient();
 
 // Obtener todas las mesas
 export const getAllTables = async (req, res) => {
-    try {
-        const { categoryId } = req.query;
-        const where = categoryId ? { categoryId: parseInt(categoryId) } : {};
+    console.log('getAllTables');
 
+
+    
+    try {
         const tables = await prisma.diningTable.findMany({
-            where,
             include: {
                 category: true
             },
             orderBy: [
                 { number: 'asc' },
                 { description: 'asc' }
+
             ]
         });
         res.json(tables);
@@ -29,10 +30,7 @@ export const getTableById = async (req, res) => {
     try {
         const { id } = req.params;
         const table = await prisma.diningTable.findUnique({
-            where: { id: parseInt(id) },
-            include: {
-                category: true
-            }
+            where: { id: parseInt(id) }
         });
 
         if (!table) {
@@ -41,12 +39,17 @@ export const getTableById = async (req, res) => {
 
         res.json(table);
     } catch (error) {
+        console.log('getTableById');
+        console.log(error);
         res.status(500).json({ error: 'Error al obtener la mesa' });
     }
 };
 
 // Crear una nueva mesa
 export const createTable = async (req, res) => {
+    console.log('createTable');
+    console.log(req.body);
+
     try {
         const { number, capacity, status, description, categoryId } = req.body;
 
@@ -64,11 +67,7 @@ export const createTable = async (req, res) => {
                 number,
                 description,
                 capacity: parseInt(capacity),
-                status: status || 'AVAILABLE',
-                categoryId: categoryId ? parseInt(categoryId) : null
-            },
-            include: {
-                category: true
+                status: status || 'AVAILABLE'
             }
         });
 
@@ -80,13 +79,15 @@ export const createTable = async (req, res) => {
 
 // Actualizar una mesa
 export const updateTable = async (req, res) => {
+    console.log('updateTable');
+    console.log(req.body);
     try {
         const { id } = req.params;
         const { number, capacity, status, description, categoryId } = req.body;
 
         // Verificar si la mesa existe
         const existingTable = await prisma.diningTable.findUnique({
-            where: { id: parseInt(id) }
+            where: { id: parseInt(id) } 
         });
 
         if (!existingTable) {
@@ -127,10 +128,7 @@ export const updateTable = async (req, res) => {
                 description,
                 capacity: capacity ? parseInt(capacity) : undefined,
                 status,
-                categoryId: categoryId !== undefined ? (categoryId ? parseInt(categoryId) : null) : undefined
-            },
-            include: {
-                category: true
+                categoryId
             }
         });
 
@@ -184,3 +182,21 @@ export const deleteTable = async (req, res) => {
         res.status(500).json({ error: 'Error al eliminar la mesa' });
     }
 }; 
+
+// Obtener mesas por categoría
+export const getTablesByCategory = async (req, res) => {
+    console.log('getTablesByCategory');
+    try {
+        const { categoryId } = req.params;
+        const tables = await prisma.diningTable.findMany({
+            where: {
+                categoryId: parseInt(categoryId)
+            }
+        });
+        res.json(tables);
+    } catch (error) {
+        res.status(500).json({ error: 'Error al obtener las mesas por categoría' });
+    }
+};
+
+

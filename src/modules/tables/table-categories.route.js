@@ -6,7 +6,7 @@ import {
     createTableCategory,
     updateTableCategory,
     deleteTableCategory
-} from './table-category.controller.js';
+} from './categories.controller.js';
 
 const router = Router();
 
@@ -19,4 +19,4 @@ router.post('/', checkTableAccess, createTableCategory);
 router.put('/:id', checkTableAccess, updateTableCategory);
 router.delete('/:id', checkTableAccess, deleteTableCategory);
 
-export default router; 
+export default router;

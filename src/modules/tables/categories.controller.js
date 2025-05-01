@@ -4,27 +4,27 @@ const prisma = new PrismaClient();
 
 // Obtener todas las categorías de mesas
 export const getAllTableCategories = async (req, res) => {
+    console.log('getAllTableCategories');
     try {
         const categories = await prisma.tableCategory.findMany({
-            include: {
-                tables: true
-            }
+            orderBy: [
+                { name: 'asc' }
+            ]
         });
         res.json(categories);
     } catch (error) {
-        res.status(500).json({ error: 'Error al obtener las categorías de mesas' });
+        console.log(error);
+        res.status(500).json({ error: 'Error al obtener las categorías de mesasss' });
     }
 };
 
 // Obtener una categoría por ID
 export const getTableCategoryById = async (req, res) => {
+    console.log('getTableCategoryById');
     try {
-        const { id } = req.params;
+        const { categoryId } = req.params;
         const category = await prisma.tableCategory.findUnique({
-            where: { id: parseInt(id) },
-            include: {
-                tables: true
-            }
+            where: { id: parseInt(categoryId) }
         });
 
         if (!category) {
@@ -33,7 +33,9 @@ export const getTableCategoryById = async (req, res) => {
 
         res.json(category);
     } catch (error) {
+        console.log(error);
         res.status(500).json({ error: 'Error al obtener la categoría' });
+   
     }
 };
 
@@ -97,9 +99,6 @@ export const updateTableCategory = async (req, res) => {
                 name,
                 description,
                 status
-            },
-            include: {
-                tables: true
             }
         });
 
@@ -116,18 +115,21 @@ export const deleteTableCategory = async (req, res) => {
 
         // Verificar si la categoría existe
         const category = await prisma.tableCategory.findUnique({
-            where: { id: parseInt(id) },
-            include: {
-                tables: true
-            }
+            where: { id: parseInt(id) }
         });
 
         if (!category) {
             return res.status(404).json({ error: 'Categoría no encontrada' });
         }
 
-        // Verificar si hay mesas asociadas
-        if (category.tables.length > 0) {
+        // Verificar si la categoría tiene mesas asociadas
+        const tablesInCategory = await prisma.diningTable.findFirst({
+            where: {
+                categoryId: parseInt(id)
+            }
+        });
+
+        if (tablesInCategory) {
             return res.status(400).json({ 
                 error: 'No se puede eliminar una categoría que tiene mesas asociadas' 
             });
@@ -141,4 +143,4 @@ export const deleteTableCategory = async (req, res) => {
     } catch (error) {
         res.status(500).json({ error: 'Error al eliminar la categoría' });
     }
-}; 
+};

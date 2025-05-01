@@ -215,10 +215,6 @@ const deleteUser = async (req, res) => {
     }
 };
 
-
-
-
-
 export {
     createUser,
     getAllUsers,
