@@ -184,3 +184,19 @@ export const deleteTable = async (req, res) => {
         res.status(500).json({ error: 'Error al eliminar la mesa' });
     }
 }; 
+
+
+export const getTablesByCategory = async (req, res) => {
+    console.log('getTablesByCategory');
+    try {
+        const { categoryId } = req.params;
+        const tables = await prisma.diningTable.findMany({
+            where: {
+                categoryId: parseInt(categoryId)
+            }
+        });
+        res.json(tables);
+    } catch (error) {
+        res.status(500).json({ error: 'Error al obtener las mesas por categoría' });
+    }
+};

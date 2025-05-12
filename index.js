@@ -11,7 +11,7 @@ import productRoutes from './src/modules/products/product.routes.js';
 import productCategoryRoutes from './src/modules/products/category.routes.js';
 import healthRoutes from './src/core/routes/health.routes.js';
 import authMiddleware from './src/modules/auth/auth.middleware.js';
-
+import orderRoutes from './src/modules/order/order.routes.js';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
