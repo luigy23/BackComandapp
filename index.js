@@ -63,6 +63,7 @@ app.use('/api/tables', authMiddleware, tableRoutes);
 app.use('/api/table-categories', authMiddleware, tableCategoryRoutes);
 app.use('/api/products', productRoutes);
 app.use('/api/product-categories', productCategoryRoutes);
+app.use('/api/orders', orderRoutes);
 
 // Ruta de ejemplo
 app.get('/', (req, res) => {
